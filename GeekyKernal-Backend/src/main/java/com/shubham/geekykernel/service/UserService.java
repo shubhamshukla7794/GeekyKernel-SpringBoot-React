@@ -13,10 +13,11 @@ public interface UserService {
 	
 	public User findUserByEmail(String email);
 	
-	public User followUser(UUID userId1, UUID userId2);
+	public User followUser(UUID requesterId, UUID requesteeId);
 	
 	public User updateUser(User user, UUID userId);
 	
 	public List<User> searchUser(String query);
 	
+	public User findUserByJwt(String jwt);
 }

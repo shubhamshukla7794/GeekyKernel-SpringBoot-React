@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,26 +19,18 @@ import com.shubham.geekykernel.entity.User;
 import com.shubham.geekykernel.service.UserService;
 
 @RestController
+@RequestMapping("/api/users")
 public class UserController {
 
-	@Autowired
-	UserRepository userRepository;
-	
+	private UserRepository userRepository;	
 	private UserService userService;
 	
-	public UserController(UserService userService) {
+	public UserController(UserRepository userRepository, UserService userService) {
+		this.userRepository = userRepository;
 		this.userService = userService;
 	}
 	
-	@PostMapping("/users") 
-	public User createUser(@RequestBody User user) {
-		
-		User savedUser = userService.registerUser(user);
-		
-		return savedUser;
-	}
-	
-	@GetMapping("/users")
+	@GetMapping("")
 	public List<User> getUsers() {
 		
 		List<User> users = userRepository.findAll();
@@ -44,34 +38,45 @@ public class UserController {
 		return users;
 	}
 	
-	@GetMapping("/users/{userId}")
+	@GetMapping("/{userId}")
 	public User getUserById(@PathVariable("userId") UUID id) {
 				
 		return userService.findUserById(id);
 	}
 	
-	@PutMapping("/users/{userId}")
-	public User updateUser(@RequestBody User user, @PathVariable UUID userId) {
+	@PutMapping("")
+	public User updateUser(@RequestHeader("Authorization") String jwt, @RequestBody User user) {
 		
-		User updatedUser = userService.updateUser(user, userId);
+		User reqUser = userService.findUserByJwt(jwt);
+		User updatedUser = userService.updateUser(user, reqUser.getId());
 		
 		return updatedUser;
 	}
 	
-	@PutMapping("/users/follow/{userId1}/{userId2}")
-	public User followUser(@PathVariable("userId1") UUID requesterId, @PathVariable("userId2") UUID requesteeId) {
+	@PutMapping("/follow/{userId}")
+	public User followUser(@RequestHeader("Authorization") String jwt, @PathVariable("userId") UUID requesteeId) {
+
+		User reqUser = userService.findUserByJwt(jwt);
 		
-		User user = userService.followUser(requesterId, requesteeId);
-		
+		User user = userService.followUser(reqUser.getId(), requesteeId);
+		user.setPassword(null);
 		return user;
 	}
 	
-	@GetMapping("/users/search")
+	@GetMapping("/search")
 	public List<User> searchUser(@RequestParam("query") String query) {
 		
 		List<User> users = userService.searchUser(query);
 		
 		return users;
+	}
+	
+	@GetMapping("/profile")
+	public User getUserFromToken(@RequestHeader("Authorization") String jwt) {
+		
+		User user = userService.findUserByJwt(jwt);
+		user.setPassword(null);
+		return user;
 	}
 	
 	

@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.shubham.geekykernel.config.JwtProvider;
 import com.shubham.geekykernel.dao.UserRepository;
 import com.shubham.geekykernel.entity.User;
 
@@ -56,18 +57,18 @@ public class UserServiceImpl implements UserService{
 	}
 
 	@Override
-	public User followUser(UUID userId1, UUID userId2) {
+	public User followUser(UUID requesterId, UUID requesteeId) {
 		
-		User user1 = findUserById(userId1);
-		User user2 = findUserById(userId2);
+		User requesterUser = findUserById(requesterId);
+		User requesteeUser = findUserById(requesteeId);
 		
-		user2.getFollowers().add(user1.getId());
-		user1.getFollowing().add(user2.getId());
+		requesteeUser.getFollowers().add(requesterUser.getId());
+		requesterUser.getFollowing().add(requesteeUser.getId());
 		
-		userRepository.save(user1);
-		userRepository.save(user2);
+		userRepository.save(requesterUser);
+		userRepository.save(requesteeUser);
 		
-		return user1;
+		return requesterUser;
 	}
 
 	@Override
@@ -103,6 +104,16 @@ public class UserServiceImpl implements UserService{
 	public List<User> searchUser(String query) {
 		
 		return userRepository.searchUser(query);
+	}
+
+	@Override
+	public User findUserByJwt(String jwt) {
+
+		String email = JwtProvider.getEmailFromJwtToken(jwt);
+		
+		User user = userRepository.findByEmail(email);
+		
+		return user;
 	}
 
 }
