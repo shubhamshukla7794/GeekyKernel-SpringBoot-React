@@ -13,17 +13,17 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "posts")
+@Table(name = "comments")
 @Getter
 @Setter
-public class Post {
+public class Comment {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -31,41 +31,27 @@ public class Post {
 	@JdbcTypeCode(SqlTypes.VARCHAR)
     private UUID id;
 	
-	@Column(name="caption")
-	private String caption;
-	
-	@Column(name="image")
-	private String image;
-	
-	@Column(name="video")
-	private String video;
-	
-	private LocalDateTime createdAt;	
+	@Column(name="content")
+	private String content;
 	
 	@ManyToOne
 	private User user;
 	
-	@OneToMany
+	@ManyToMany
 	private List<User> liked = new ArrayList<>();
 	
-	@OneToMany
-	private List<Comment> comments = new ArrayList<>();
+	private LocalDateTime createdAt;
 	
-	public Post() {
+	public Comment() {
 		// TODO Auto-generated constructor stub
 	}
 
-	public Post(String caption, String image, String video, LocalDateTime createdAt, User user, List<User> liked,
-			List<Comment> comments) {
-		this.caption = caption;
-		this.image = image;
-		this.video = video;
-		this.createdAt = createdAt;
+	public Comment(String content, User user, List<User> liked, LocalDateTime createdAt) {
+		super();
+		this.content = content;
 		this.user = user;
 		this.liked = liked;
-		this.comments = comments;
+		this.createdAt = createdAt;
 	}
-
-		
 	
 }
